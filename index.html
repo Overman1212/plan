@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gym Workout Plan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 300px;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .workout {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button.completed {
+      background-color: #4CAF50;
+      color: white;
+    }
+    button.postpone {
+      background-color: #f44336;
+      color: white;
+    }
+    .hidden {
+      display: none;
+    }
+    .date-info {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .details {
+      margin-top: 20px;
+      font-size: 14px;
+      text-align: left;
+    }
+    .stats-page {
+      display: none;
+      text-align: left;
+      margin-top: 20px;
+    }
+    .stats-page h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Today's Workout</h1>
+    <div class="date-info" id="date-info"></div>
+    <div class="workout" id="workout"></div>
+    <div class="buttons">
+      <button onclick="showStats()">Show Stats</button>
+    </div>
+
+    <div class="stats-page" id="stats-page">
+      <h3>Stats</h3>
+      <p><strong>Total Completed Days:</strong> <span id="completed-count">0</span></p>
+      <p><strong>Total Postponed Days:</strong> <span id="postponed-count">0</span></p>
+      <h3>Completed Workouts:</h3>
+      <ul id="completed-list"></ul>
+      <h3>Postponed Workouts:</h3>
+      <ul id="postponed-list"></ul>
+    </div>
+  </div>
+
+  <script>
+    // 7-day workout plan
+    const workoutPlan = [
+      "Day 1: Chest & Triceps",
+      "Day 2: Back & Biceps",
+      "Day 3: Legs & Shoulders",
+      "Day 4: Rest Day",
+      "Day 5: Chest & Back",
+      "Day 6: Arms & Shoulders",
+      "Day 7: Legs & Core"
+    ];
+
+    // Get today's date and workout index
+    const today = new Date();
+    const todayDate = today.toLocaleDateString(); // D/M/Y
+    const dayOfWeek = today.toLocaleString('default', { weekday: 'long' }); // Monday, Tuesday...
+    let currentDayIndex = localStorage.getItem('currentDayIndex') ? parseInt(localStorage.getItem('currentDayIndex')) : 0;
+    const lastUpdated = localStorage.getItem('lastUpdated');
+
+    // Check if it's a new day
+    if (lastUpdated !== todayDate) {
+      localStorage.setItem('lastUpdated', todayDate);
+      localStorage.setItem('currentDayIndex', currentDayIndex);
+    }
+
+    // Display today's workout and current date
+    document.getElementById('workout').textContent = workoutPlan[currentDayIndex];
+    document.getElementById('date-info').textContent = `${todayDate} (${dayOfWeek})`;
+
+    // Load completed and postponed lists from localStorage
+    const completedWorkouts = JSON.parse(localStorage.getItem('completedWorkouts')) || [];
+    const postponedWorkouts = JSON.parse(localStorage.getItem('postponedWorkouts')) || [];
+
+    // Show Stats page
+    function showStats() {
+      document.querySelector('.container').style.display = 'none';
+      document.getElementById('stats-page').style.display = 'block';
+
+      // Display total completed and postponed workouts
+      document.getElementById('completed-count').textContent = completedWorkouts.length;
+      document.getElementById('postponed-count').textContent = postponedWorkouts.length;
+
+      // Display completed workouts
+      const completedList = document.getElementById('completed-list');
+      completedWorkouts.forEach(workout => {
+        const li = document.createElement('li');
+        li.textContent = `${workout.workout} on ${workout.date} (${workout.dayOfWeek})`;
+        completedList.appendChild(li);
+      });
+
+      // Display postponed workouts
+      const postponedList = document.getElementById('postponed-list');
+      postponedWorkouts.forEach(workout => {
+        const li = document.createElement('li');
+        li.textContent = `${workout.workout} on ${workout.date} (${workout.dayOfWeek})`;
+        postponedList.appendChild(li);
+      });
+    }
+
+    // Mark workout as completed
+    function markCompleted() {
+      completedWorkouts.push({
+        date: todayDate,
+        workout: workoutPlan[currentDayIndex],
+        dayOfWeek: dayOfWeek
+      });
+      localStorage.setItem('completedWorkouts', JSON.stringify(completedWorkouts));
+      localStorage.setItem('currentDayIndex', (currentDayIndex + 1) % 7);
+      alert("Workout marked as completed!");
+      location.reload();
+    }
+
+    // Postpone workout to tomorrow
+    function postponeWorkout() {
+      postponedWorkouts.push({
+        date: todayDate,
+        workout: workoutPlan[currentDayIndex],
+        dayOfWeek: dayOfWeek
+      });
+      localStorage.setItem('postponedWorkouts', JSON.stringify(postponedWorkouts));
+      alert("Workout postponed to tomorrow.");
+    }
+  </script>
+</body>
+</html>
