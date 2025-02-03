@@ -61,15 +61,6 @@
       font-size: 14px;
       text-align: left;
     }
-    .stats-page {
-      display: none;
-      text-align: left;
-      margin-top: 20px;
-    }
-    .stats-page h3 {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
   </style>
 </head>
 <body>
@@ -77,14 +68,11 @@
     <h1>Today's Workout</h1>
     <div class="date-info" id="date-info"></div>
     <div class="workout" id="workout"></div>
-    <div class="buttons">
-      <button onclick="showStats()">Show Stats</button>
+    <div class="buttons" id="buttons">
+      <button class="completed" onclick="markCompleted()">Completed</button>
+      <button class="postpone" onclick="postponeWorkout()">Postpone</button>
     </div>
-
-    <div class="stats-page" id="stats-page">
-      <h3>Stats</h3>
-      <p><strong>Total Completed Days:</strong> <span id="completed-count">0</span></p>
-      <p><strong>Total Postponed Days:</strong> <span id="postponed-count">0</span></p>
+    <div class="details">
       <h3>Completed Workouts:</h3>
       <ul id="completed-list"></ul>
       <h3>Postponed Workouts:</h3>
@@ -115,6 +103,9 @@
     if (lastUpdated !== todayDate) {
       localStorage.setItem('lastUpdated', todayDate);
       localStorage.setItem('currentDayIndex', currentDayIndex);
+      document.getElementById('buttons').classList.remove('hidden');
+    } else {
+      document.getElementById('buttons').classList.add('hidden');
     }
 
     // Display today's workout and current date
@@ -125,41 +116,30 @@
     const completedWorkouts = JSON.parse(localStorage.getItem('completedWorkouts')) || [];
     const postponedWorkouts = JSON.parse(localStorage.getItem('postponedWorkouts')) || [];
 
-    // Show Stats page
-    function showStats() {
-      document.querySelector('.container').style.display = 'none';
-      document.getElementById('stats-page').style.display = 'block';
+    // Display completed and postponed workouts
+    const completedList = document.getElementById('completed-list');
+    completedWorkouts.forEach(workout => {
+      const li = document.createElement('li');
+      li.textContent = `${workout.date}: ${workout.workout}`;
+      completedList.appendChild(li);
+    });
 
-      // Display total completed and postponed workouts
-      document.getElementById('completed-count').textContent = completedWorkouts.length;
-      document.getElementById('postponed-count').textContent = postponedWorkouts.length;
-
-      // Display completed workouts
-      const completedList = document.getElementById('completed-list');
-      completedWorkouts.forEach(workout => {
-        const li = document.createElement('li');
-        li.textContent = `${workout.workout} on ${workout.date} (${workout.dayOfWeek})`;
-        completedList.appendChild(li);
-      });
-
-      // Display postponed workouts
-      const postponedList = document.getElementById('postponed-list');
-      postponedWorkouts.forEach(workout => {
-        const li = document.createElement('li');
-        li.textContent = `${workout.workout} on ${workout.date} (${workout.dayOfWeek})`;
-        postponedList.appendChild(li);
-      });
-    }
+    const postponedList = document.getElementById('postponed-list');
+    postponedWorkouts.forEach(workout => {
+      const li = document.createElement('li');
+      li.textContent = `${workout.date}: ${workout.workout}`;
+      postponedList.appendChild(li);
+    });
 
     // Mark workout as completed
     function markCompleted() {
       completedWorkouts.push({
         date: todayDate,
-        workout: workoutPlan[currentDayIndex],
-        dayOfWeek: dayOfWeek
+        workout: workoutPlan[currentDayIndex]
       });
       localStorage.setItem('completedWorkouts', JSON.stringify(completedWorkouts));
       localStorage.setItem('currentDayIndex', (currentDayIndex + 1) % 7);
+      document.getElementById('buttons').classList.add('hidden');
       alert("Workout marked as completed!");
       location.reload();
     }
@@ -168,10 +148,10 @@
     function postponeWorkout() {
       postponedWorkouts.push({
         date: todayDate,
-        workout: workoutPlan[currentDayIndex],
-        dayOfWeek: dayOfWeek
+        workout: workoutPlan[currentDayIndex]
       });
       localStorage.setItem('postponedWorkouts', JSON.stringify(postponedWorkouts));
+      document.getElementById('buttons').classList.add('hidden');
       alert("Workout postponed to tomorrow.");
     }
   </script>
